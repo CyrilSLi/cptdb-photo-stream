@@ -48,12 +48,10 @@
             display: flex;
             align-items: center;
         }
-        #app, details {
+        #app {
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-        #app {
             padding: calc(var(--spacing) / 2 * var(--pc));
             width: calc((100 - var(--spacing)) * var(--pc));
             overflow-y: auto;
@@ -79,6 +77,8 @@
         summary {
             -webkit-user-select: none;
             user-select: none;
+            width: fit-content;
+            margin: 0 auto;
         }
         details > :not(summary) {
             margin-top: calc(var(--spacing) * var(--pc));
