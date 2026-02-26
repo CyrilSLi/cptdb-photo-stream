@@ -29,23 +29,33 @@
             margin-right: calc(3 * var(--pc));
             border-radius: calc(3 * var(--pc));
         }
-        h1, h2 {
-            font-size: calc(5 * var(--pc));
-            font-weight: bold;
+        h1, h2, h3, p, summary::marker {
             font-family: Arial, sans-serif;
             overflow-wrap: break-word;
             min-width: 0;
+            text-align: center;
+        }
+        h1, h2, h3, summary::marker {
+            font-size: calc(5 * var(--pc));
+        }
+        h1, h2 {
+            font-weight: bold;
+        }
+        p {
+            font-size: calc(3 * var(--pc));
         }
         #heading-container {
             display: flex;
             align-items: center;
         }
-        #app {
+        #app, details {
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+        #app {
             padding: calc(var(--spacing) / 2 * var(--pc));
-            width: calc(95 * var(--pc));
+            width: calc((100 - var(--spacing)) * var(--pc));
             overflow-y: auto;
             background-color: #eae5e4;
         }
@@ -58,13 +68,24 @@
             justify-content: center;
             height: 100dvh;
         }
+        a, a:visited {
+            color: blue;
+            text-decoration: underline;
+            font-weight: inherit;
+        }
+        summary * {
+            display: inline-block;
+        }
+        details > :not(summary) {
+            margin-top: calc(var(--spacing) * var(--pc));
+        }
     </style>
 </head>
 <body>
     <div id="app">
         <div id="heading-container">
             <img class="ipsUserPhoto">
-            <h1 id="heading"></h1>
+            <h1><a id="userLink" target="_blank">N/A</a>'s Photo Stream</h1>
         </div>
     </div>
     <script>
@@ -75,12 +96,14 @@
             return;
         }
         let page = 1, pageFetchEnabled = false;
-        // let lastPost = {};
 
         const app = document.getElementById("app");
+        const dateOptions = { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false };
 
         async function fetchContent() {
             var content;
+            const photoUrls = new Set();
+
             try {
                 const contentPage = await fetch(`https://cptdb.ca/profile/${userId}/content/page/${page}`);
                 content = new DOMParser().parseFromString(await contentPage.text(), "text/html");
@@ -96,17 +119,40 @@
             const userName = content.getElementsByTagName("h1")[0].textContent.trim();
 
             document.querySelector(".ipsUserPhoto").src = userPhotoUrl;
-            document.getElementById("heading").textContent = userName + "'s Photo Stream";
+            document.getElementById("userLink").textContent = userName;
+            document.getElementById("userLink").href = "https://cptdb.ca/profile/" + userId;
 
             userContent.querySelectorAll("li.ipsStreamItem_contentBlock").forEach((post) => {
-                const photoList = post.querySelectorAll('a[href^="https://cptdb.ca/uploads/monthly_"]:has(img[src^="https://cptdb.ca/uploads/monthly_"])');
+                const photoList = [...post.querySelectorAll('a[href^="https://cptdb.ca/uploads/monthly_"]:has(img[src^="https://cptdb.ca/uploads/monthly_"])')].filter((el) => {
+                    if (photoUrls.has(el.href)) {
+                        return false;
+                    }
+                    photoUrls.add(el.href);
+                    return true;
+                })
                 if (photoList.length === 0) {
                     return;
                 }
 
-                const postTime = document.createElement("h2");
-                postTime.textContent = post.querySelector("ul.ipsStreamItem_meta time").dateTime;
-                app.appendChild(postTime);
+                const postLinkEl = post.querySelector("h2.ipsStreamItem_title a");
+                var postText = post.querySelector("div.ipsType_richText > div").textContent.trim();
+                postText = postText.split(/\r?\n|\r/).reduce((acc, line) => { // Remove empty lines and trim whitespace from each line
+                    if (line.trim() !== "") {
+                        acc.push(line.trim());
+                    }
+                    return acc;
+                }, []).join("</p><p>");
+
+                const postDetails = document.createElement("div");
+                postDetails.className = "postDetails";
+                postDetails.innerHTML = `
+                    <h2>${new Date(post.querySelector("ul.ipsStreamItem_meta time").dateTime).toLocaleString("en-US", dateOptions)}</h2>
+                    <details>
+                        <summary><h3>&nbsp;<a href=${postLinkEl.href} target="_blank">${postLinkEl.textContent.trim()}</a></h3></summary>
+                        <p>${postText}</p>
+                    </details>
+                `;
+                app.appendChild(postDetails);
 
                 photoList.forEach((el) => {
                     const img = document.createElement("img");
