@@ -76,6 +76,10 @@
         summary * {
             display: inline-block;
         }
+        summary {
+            -webkit-user-select: none;
+            user-select: none;
+        }
         details > :not(summary) {
             margin-top: calc(var(--spacing) * var(--pc));
         }
