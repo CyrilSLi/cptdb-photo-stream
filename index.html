@@ -15,7 +15,8 @@
             appearance: none;
             font-weight: normal;
             border: none;
-            --pc: calc(min(100vw, calc(100dvh / 16 * 9)) / 100)
+            --pc: calc(min(100vw, calc(100dvh / 16 * 9)) / 100);
+            --spacing: 3;
         }
         img.streamImage {
             display: block;
@@ -38,20 +39,19 @@
         #heading-container {
             display: flex;
             align-items: center;
-            justify-content: center;
         }
         #app {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: calc(2.5 * var(--pc));
+            padding: calc(var(--spacing) / 2 * var(--pc));
             width: calc(95 * var(--pc));
             overflow-y: auto;
-            background-color: lightblue;
+            background-color: #eae5e4;
         }
         #app > * {
-            width: calc(100% - 5 * var(--pc));
-            margin: calc(2.5 * var(--pc));
+            width: calc(100% - var(--spacing) * var(--pc));
+            margin: calc(var(--spacing) / 2 * var(--pc));
         }
         body {
             display: flex;
@@ -63,7 +63,7 @@
 <body>
     <div id="app">
         <div id="heading-container">
-            <img class="ipsUserPhoto" src="">
+            <img class="ipsUserPhoto">
             <h1 id="heading"></h1>
         </div>
     </div>
@@ -74,22 +74,49 @@
             alert("No user ID provided in the URL hash.");
             return;
         }
+        let page = 1, pageFetchEnabled = false;
 
-        const contentPage = await fetch(`https://cptdb.ca/profile/${userId}/content/`);
-        const content = new DOMParser().parseFromString(await contentPage.text(), "text/html");
-        const userPhotoUrl = content.querySelector('#elProfilePhoto a[href^="https://cptdb.ca/uploads/monthly_"]').href;
-        const userContent = content.getElementById("elUserContent");
-        const userName = content.getElementsByTagName("h1")[0].textContent.trim();
+        const app = document.getElementById("app");
 
-        userContent.querySelectorAll('a[href^="https://cptdb.ca/uploads/monthly_"]:has(img[src^="https://cptdb.ca/uploads/monthly_"])').forEach((el) => {
-            const img = document.createElement("img");
-            img.className = "streamImage";
-            img.src = el.href;
-            document.getElementById("app").appendChild(img);
+        async function fetchContent() {
+            var content;
+            try {
+                const contentPage = await fetch(`https://cptdb.ca/profile/${userId}/content/page/${page}`);
+                content = new DOMParser().parseFromString(await contentPage.text(), "text/html");
+            } catch (e) {
+                console.error("Failed to fetch content:", e);
+                fetchContent(); // Retry fetching content
+                return;
+            }
+            console.log("Fetched page", page);
+
+            const userPhotoUrl = content.querySelector('#elProfilePhoto a[href^="https://cptdb.ca/uploads/monthly_"]').href;
+            const userContent = content.getElementById("elUserContent");
+            const userName = content.getElementsByTagName("h1")[0].textContent.trim();
+
+            document.querySelector(".ipsUserPhoto").src = userPhotoUrl;
+            document.getElementById("heading").textContent = userName + "'s Photo Stream";
+
+            userContent.querySelectorAll('a[href^="https://cptdb.ca/uploads/monthly_"]:has(img[src^="https://cptdb.ca/uploads/monthly_"])').forEach((el) => {
+                const img = document.createElement("img");
+                img.className = "streamImage";
+                img.src = el.href;
+                app.appendChild(img);
+            });
+
+            if (content.querySelector("li.ipsPagination_next:not(.ipsPagination_inactive) a")) {
+                pageFetchEnabled = true;
+                page++;
+            }
+        }
+        
+        app.addEventListener("scroll", () => {
+            if (pageFetchEnabled && app.scrollTop + app.clientHeight >= app.scrollHeight - app.clientHeight) {
+                pageFetchEnabled = false;
+                fetchContent();
+            }
         });
-
-        document.querySelector(".ipsUserPhoto").src = userPhotoUrl;
-        document.getElementById("heading").textContent = userName + "'s Photo Stream";
+        fetchContent();
     })();
     </script>
 </body>
