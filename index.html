@@ -29,7 +29,7 @@
             margin-right: calc(3 * var(--pc));
             border-radius: calc(3 * var(--pc));
         }
-        h1 {
+        h1, h2 {
             font-size: calc(5 * var(--pc));
             font-weight: bold;
             font-family: Arial, sans-serif;
@@ -75,6 +75,7 @@
             return;
         }
         let page = 1, pageFetchEnabled = false;
+        // let lastPost = {};
 
         const app = document.getElementById("app");
 
@@ -97,11 +98,22 @@
             document.querySelector(".ipsUserPhoto").src = userPhotoUrl;
             document.getElementById("heading").textContent = userName + "'s Photo Stream";
 
-            userContent.querySelectorAll('a[href^="https://cptdb.ca/uploads/monthly_"]:has(img[src^="https://cptdb.ca/uploads/monthly_"])').forEach((el) => {
-                const img = document.createElement("img");
-                img.className = "streamImage";
-                img.src = el.href;
-                app.appendChild(img);
+            userContent.querySelectorAll("li.ipsStreamItem_contentBlock").forEach((post) => {
+                const photoList = post.querySelectorAll('a[href^="https://cptdb.ca/uploads/monthly_"]:has(img[src^="https://cptdb.ca/uploads/monthly_"])');
+                if (photoList.length === 0) {
+                    return;
+                }
+
+                const postTime = document.createElement("h2");
+                postTime.textContent = post.querySelector("ul.ipsStreamItem_meta time").dateTime;
+                app.appendChild(postTime);
+
+                photoList.forEach((el) => {
+                    const img = document.createElement("img");
+                    img.className = "streamImage";
+                    img.src = el.href;
+                    app.appendChild(img);
+                });
             });
 
             if (content.querySelector("li.ipsPagination_next:not(.ipsPagination_inactive) a")) {
