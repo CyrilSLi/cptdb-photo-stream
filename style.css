@@ -76,8 +76,8 @@ summary {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-details::marker {
-    margin-right: calc(var(--spacing) / 2 * var(--pc));
+summary::marker {
+    cursor: pointer;
 }
 details > :not(summary) {
     margin-top: calc(var(--spacing) * var(--pc));

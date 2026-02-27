@@ -71,7 +71,7 @@
                     return;
                 }
 
-                const postLinkEl = post.querySelector("h2.ipsStreamItem_title a");
+                const postLinkEl = post.querySelector("h2.ipsStreamItem_title a:not(.ipsTag_prefix)");
                 var postText = post.querySelector("div.ipsType_richText > div")?.textContent.trim() || "";
                 postText = postText.split(/\r?\n|\r/).reduce((acc, line) => { // Remove empty lines and trim whitespace from each line
                     if (line.trim() !== "") {
@@ -85,7 +85,7 @@
                 postDetails.innerHTML = `
                     <h2>${new Date(post.querySelector("ul.ipsStreamItem_meta time").dateTime).toLocaleString("en-US", dateOptions)}</h2>
                     <details>
-                        <summary><h3><a href=${postLinkEl.href} target="_blank">${postLinkEl.textContent.trim()}</a></h3></summary>
+                        <summary><h3>&nbsp;<a href=${postLinkEl.href} target="_blank">${postLinkEl.textContent.trim()}</a></h3></summary>
                         <p>${postText}</p>
                     </details>
                 `;
