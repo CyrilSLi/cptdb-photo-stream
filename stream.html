@@ -95,8 +95,12 @@
             });
 
             if (content.querySelector("li.ipsPagination_next:not(.ipsPagination_inactive) a")) {
-                pageFetchEnabled = true;
                 page++;
+                if (app.scrollTop + app.clientHeight >= app.scrollHeight - app.clientHeight) {
+                    fetchContent(); // Fetched page could be short, fetch again if the newly loaded content doesn't fill the screen
+                } else {
+                    pageFetchEnabled = true;
+                }
             }
         }
         
