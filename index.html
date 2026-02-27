@@ -101,9 +101,10 @@
     </div>
     <script>
     (async () => {
-        const userId = window.location.hash.substring(2); // Remove "#/"
+        const params = new URLSearchParams(window.location.search);
+        const userId = params.get("userId");
         if (!userId) {
-            alert("No user ID provided in the URL hash.");
+            alert("Error: No user ID provided.");
             return;
         }
         let page = 1, pageFetchEnabled = false;
