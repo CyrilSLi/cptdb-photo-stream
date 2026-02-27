@@ -72,13 +72,20 @@
             font-weight: inherit;
         }
         summary * {
-            display: inline-block;
+            display: inline;
         }
         summary {
             -webkit-user-select: none;
             user-select: none;
             width: fit-content;
+            max-width: 100%;
             margin: 0 auto;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        details::marker {
+            margin-right: calc(var(--spacing) / 2 * var(--pc));
         }
         details > :not(summary) {
             margin-top: calc(var(--spacing) * var(--pc));
@@ -118,7 +125,12 @@
             }
             console.log("Fetched page", page);
 
-            const userPhotoUrl = content.querySelector('#elProfilePhoto a[href^="https://cptdb.ca/uploads/monthly_"]').href;
+            const userPhotoUrl = (
+                content.querySelector('#elProfilePhoto a[href^="https://cptdb.ca/uploads/monthly_"]')?.href ||
+                content.querySelector("#elProfilePhoto img")?.src ||
+                "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" // small fallback image
+            );
+
             const userContent = content.getElementById("elUserContent");
             const userName = content.getElementsByTagName("h1")[0].textContent.trim();
 
@@ -139,7 +151,7 @@
                 }
 
                 const postLinkEl = post.querySelector("h2.ipsStreamItem_title a");
-                var postText = post.querySelector("div.ipsType_richText > div").textContent.trim();
+                var postText = post.querySelector("div.ipsType_richText > div")?.textContent.trim() || "";
                 postText = postText.split(/\r?\n|\r/).reduce((acc, line) => { // Remove empty lines and trim whitespace from each line
                     if (line.trim() !== "") {
                         acc.push(line.trim());
@@ -152,7 +164,7 @@
                 postDetails.innerHTML = `
                     <h2>${new Date(post.querySelector("ul.ipsStreamItem_meta time").dateTime).toLocaleString("en-US", dateOptions)}</h2>
                     <details>
-                        <summary><h3>&nbsp;<a href=${postLinkEl.href} target="_blank">${postLinkEl.textContent.trim()}</a></h3></summary>
+                        <summary><h3><a href=${postLinkEl.href} target="_blank">${postLinkEl.textContent.trim()}</a></h3></summary>
                         <p>${postText}</p>
                     </details>
                 `;
