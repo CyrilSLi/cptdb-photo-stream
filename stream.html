@@ -40,6 +40,7 @@
                 content = new DOMParser().parseFromString(await contentPage.text(), "text/html");
             } catch (e) {
                 console.error("Failed to fetch content:", e);
+                app.removeChild(loadingText);
                 fetchContent(); // Retry fetching content
                 return;
             }
@@ -57,7 +58,7 @@
             document.querySelector(".ipsUserPhoto").src = userPhotoUrl;
             document.getElementById("userLink").textContent = userName;
             document.getElementById("userLink").href = "https://cptdb.ca/profile/" + userId;
-            app.removeChild(app.lastChild); // Remove loading text
+            app.removeChild(loadingText);
 
             userContent.querySelectorAll("li.ipsStreamItem_contentBlock").forEach((post) => {
                 const photoList = [...post.querySelectorAll('a[href^="https://cptdb.ca/uploads/monthly_"]:has(img[src^="https://cptdb.ca/uploads/monthly_"])')].filter((el) => {
