@@ -31,6 +31,10 @@
             var content;
             const photoUrls = new Set();
 
+            const loadingText = document.createElement("h2");
+            loadingText.textContent = "Loading page " + page + "...";
+            app.appendChild(loadingText);
+
             try {
                 const contentPage = await fetch(`https://cptdb.ca/profile/${userId}/content/page/${page}`);
                 content = new DOMParser().parseFromString(await contentPage.text(), "text/html");
@@ -53,6 +57,7 @@
             document.querySelector(".ipsUserPhoto").src = userPhotoUrl;
             document.getElementById("userLink").textContent = userName;
             document.getElementById("userLink").href = "https://cptdb.ca/profile/" + userId;
+            app.removeChild(app.lastChild); // Remove loading text
 
             userContent.querySelectorAll("li.ipsStreamItem_contentBlock").forEach((post) => {
                 const photoList = [...post.querySelectorAll('a[href^="https://cptdb.ca/uploads/monthly_"]:has(img[src^="https://cptdb.ca/uploads/monthly_"])')].filter((el) => {
@@ -101,6 +106,10 @@
                 } else {
                     pageFetchEnabled = true;
                 }
+            } else {
+                const lastPageText = document.createElement("h2");
+                lastPageText.textContent = "End of Photo Stream";
+                app.appendChild(lastPageText);
             }
         }
         
